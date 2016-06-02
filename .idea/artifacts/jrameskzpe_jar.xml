@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="jrameskzpe:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/jrameskzpe_jar</output-path>
+    <root id="archive" name="jrameskzpe.jar">
+      <element id="module-output" name="jrameskzpe" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/WebSocket.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jna.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/json-org.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
