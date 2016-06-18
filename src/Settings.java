@@ -11,7 +11,5 @@ public class Settings {
 
     public static int SMALL_WINDOW_WIDTH = 80;
     public static int SMALL_WINDOW_HEIGHT = 60;
-   // public static String URI = "ws://10.0.0.109:5000";
-    public static String URI = "ws://127.0.0.1:8080";
     public static String IMAGE_PATH = "C:\\Users\\Public\\Pictures\\Chrysanthemum.png";
 }

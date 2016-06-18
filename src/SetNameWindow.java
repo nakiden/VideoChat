@@ -12,9 +12,8 @@ public class SetNameWindow extends JFrame{
         super("Skype - SET YOUR NAME");
         setSize(Settings.WINDOW_WIDTH / 2, Settings.WINDOW_HEIGHT / 6);
         setResizable(false);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         setLayout(new FlowLayout());
-        // printGUI();
         okBtn.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {

@@ -7,10 +7,6 @@ public class Messages {
         messages = new ArrayList<String>();
     }
 
-    public void clearMessages(){
-        messages.removeAll(messages);
-    }
-
     public ArrayList<String> addMessage(String str){
         messages.add(str);
         return messages;

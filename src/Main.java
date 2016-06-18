@@ -4,9 +4,12 @@ import org.java_websocket.handshake.ServerHandshake;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.awt.peer.MouseInfoPeer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,7 +17,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class Main extends JFrame   {
+public class Main extends JFrame implements ActionListener {
+
 
     private static final long serialVersionUID = 1L;
 
@@ -27,18 +31,14 @@ public class Main extends JFrame   {
     public static  Messages msg;
     public static  Users users;
     private boolean connected = false;
-
     public static WebSocketClient mWebSocketClient;
-
-    public int oldX = -1;
-    public int oldY = -1;
+    private JPanel contentPane;
 
     JButton saveBtn = new JButton("Save");
-    JButton sendBtn = new JButton("Clear");
+    JButton sendBtn = new JButton("Send");
     JButton changeBtn = new JButton("Change");
-    JButton okBtn = new JButton("SEND");
+    JButton clearBtn = new JButton("Clear");
     JTextField text = new JTextField("");
-    private JPanel contentPane;
 
     Main(){
         super("Skype - JAVA");
@@ -50,7 +50,6 @@ public class Main extends JFrame   {
     }
 
     public void init_main(){
-
         msg = new Messages();
         users = new Users();
         cw = new ContactsWindow();
@@ -58,123 +57,16 @@ public class Main extends JFrame   {
         cw.setVisible(true);
         chw.setVisible(true);
         runSocket();
-
         contentPane = new GraphicsBackground(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
         setContentPane(contentPane);
-
-        changeBtn.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-        saveBtn.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                save();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-        sendBtn.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Graphics g = getGraphics();
-                g.setColor(Color.black);
-                g.clearRect(0, 0, 800, 600);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
-        okBtn.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                mWebSocketClient.send(SocketMaster.returnObjectToSend(text.getText(), "message"));
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
+        saveBtn.addActionListener(this);
+        sendBtn.addActionListener(this);
+        clearBtn.addActionListener(this);
         add(sendBtn);
-        add(changeBtn);
+        add(clearBtn);
         add(saveBtn);
         text.setColumns(20);
         text.setVisible(true);
-        //  add(text);
-        //  add(okBtn);
         showGUI(false);
     }
 
@@ -188,51 +80,48 @@ public class Main extends JFrame   {
         Thread th = new Thread(new Runnable() {
             @Override
             public void run() {
-                URI uri;
 
                 try {
-                   // uri = new URI("ws://192.168.0.117:8080");
-                    uri = new URI("ws://10.0.0.109:8080");
+                    URI uri = new URI("ws://10.0.0.109:8080");
+
+                    mWebSocketClient = new WebSocketClient(uri) {
+                        @Override
+                        public void onOpen(ServerHandshake serverHandshake) {
+                            connected = true;
+                            mWebSocketClient.send(SocketMaster.returnObjectToSend("", "new user"));
+                            runMyBackgroundSender();
+                            System.out.println("Opened");
+                        }
+
+                        @Override
+                        public void onMessage(String s){
+                            SocketMaster.parseJSON(s);
+                            contentPane.update(getGraphics());
+                            save();
+                        }
+
+                        @Override
+                        public void onClose(int i, String s, boolean b) {
+                            System.out.println("Closed " + s);
+                            System.out.println("Im trying");
+                            connected = false;
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            System.out.println("Error " + e.getMessage());
+                        }
+                    };
+                    mWebSocketClient.connect();
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
-                    return;
                 }
-
-                mWebSocketClient = new WebSocketClient(uri) {
-                    @Override
-                    public void onOpen(ServerHandshake serverHandshake) {
-                        connected = true;
-                        mWebSocketClient.send(SocketMaster.returnObjectToSend("", "new user"));
-                        runMyBackgroundSender();
-                        System.out.println("Opened");
-                    }
-
-                    @Override
-                    public void onMessage(String s) {
-                        SocketMaster.parseJSON(s);
-                        print();
-                        System.out.println("msg = " + s);
-                    }
-
-                    @Override
-                    public void onClose(int i, String s, boolean b) {
-                        System.out.println("Closed " + s);
-                        System.out.println("Im trying");
-                        connected = false;
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        System.out.println("Error " + e.getMessage());
-                    }
-                };
-                mWebSocketClient.connect();
             }
         });
         th.start();
     }
 
-    private void runMyBackgroundSender(){
+    private void runMyBackgroundSender() {
         Thread th = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -241,7 +130,7 @@ public class Main extends JFrame   {
 
                     try {
                         mWebSocketClient.send(SocketMaster.returnObjectToSend("", "update user"));
-                        Thread.sleep(2500);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -251,52 +140,41 @@ public class Main extends JFrame   {
         th.start();
     }
 
-    public void print(){
-        contentPane.update(getGraphics());
-        save();
-    }
-
-    public void save()
-    {
+    public void save() throws IOException {
         showGUI(false);
-        Container dPanel = this;
-        BufferedImage bImg = new BufferedImage(dPanel.getWidth(), dPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
-        //users.getUsers().get(0).setBufferedImage(bImg);
+        BufferedImage bImg = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D cg = bImg.createGraphics();
-        dPanel.paintAll(cg);
-
-        try {
-
-            if (ImageIO.write(bImg, "png", new File(Settings.IMAGE_PATH))) {
-                System.out.println("-- saved");
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        this.paintAll(cg);
+        ImageIO.write(bImg, "png", new File(Settings.IMAGE_PATH));
         showGUI(false);
         WPChanger.User32.INSTANCE.SystemParametersInfo(0x0014, 0, Settings.IMAGE_PATH, 1);
     }
 
-    public static byte[] convertImgToByte(BufferedImage img){
+    public static byte[] convertImgToByte(BufferedImage img) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-        try {
-            ImageIO.write(img, "png", byteArrayOutputStream);
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ImageIO.write(img, "png", byteArrayOutputStream);
         return null;
     }
 
-    public static BufferedImage convertByteToImg(byte[] bytes){
+    public static BufferedImage convertByteToImg(byte[] bytes) throws IOException {
+        return ImageIO.read(new ByteArrayInputStream(bytes));
+    }
 
-        try {
-            return ImageIO.read(new ByteArrayInputStream(bytes));
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        if (e.getActionCommand().equals("Send")){
+            mWebSocketClient.send(SocketMaster.returnObjectToSend(text.getText(), "message"));
         }
-        return null;
+
+        if (e.getActionCommand().equals("Save")){
+            save();
+        }
+
+        if (e.getActionCommand().equals("Clear")){
+            Graphics g = getGraphics();
+            g.setColor(Color.black);
+            g.clearRect(0, 0, 800, 600);
+        }
     }
 }

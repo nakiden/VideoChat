@@ -11,7 +11,6 @@ public class GraphicsBackground extends JPanel {
         setSize(width, height);
     }
 
-
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -19,12 +18,7 @@ public class GraphicsBackground extends JPanel {
         g2.setColor(Settings.TEXT_COLOR);
 
         for (int i = 0; i < Main.msg.getMessages().size(); i++) {
-
-            if (i == 0) {
-                g2.drawString(Main.msg.getMessages().get(i), 0, 20);
-            } else {
-                g2.drawString(Main.msg.getMessages().get(i), 0, 20 + (i * Settings.SPACE_BETWEEN_ROWS));
-            }
+            g2.drawString(Main.msg.getMessages().get(i), 0, 20 + (i * Settings.SPACE_BETWEEN_ROWS));
         }
     }
 }

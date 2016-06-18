@@ -20,8 +20,4 @@ public class User {
     public BufferedImage getBufferedImage(){
         return this.desctop;
     }
-
-    public Image getSizebleImage(int width, int height){
-        return this.desctop.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-    }
 }
